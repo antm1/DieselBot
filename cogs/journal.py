@@ -152,11 +152,11 @@ class Journal(commands.Cog):
 
         if price.isdigit():
             price = int(price)
-            print('it is an int')
+            #print('it is an int')
         else:
             try:
                 price = float(price)
-                print('it is a float')
+                #print('it is a float')
             except ValueError:
                 await ctx.send(content="Please use the correct format on your entry and try again")
                 return
@@ -233,19 +233,69 @@ class Journal(commands.Cog):
 
         if len(parts) == 5:
             side = parts[4]
-            self.journal[str(ctx.message.author.id)].append({"Cancelled": False, "EntryExit": "Exit", "Timestamp": str(ctx.message.created_at), "Ticker": ticker, "Price": price, "Currency": currency, "Side": side})
-            text = 'Your exit out of ' + ticker + ' at ' + str(price) + ' ' + currency + ' ' + side + ' has been added to the list'
+            c = 0
+            percent = 0
+            index = -1
+            while c in range(len(self.journal[str(ctx.message.author.id)])):
+                if (self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1 + c)][
+                    "Cancelled"] == False) and ticker == (self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1 + c)][
+                    "Ticker"]) and currency == (self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1 + c)][
+                    "Currency"]) and self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["EntryExit"] == "Entry":
+                    percent = round((price/(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1 + c)][
+                        "Price"]) - 1)*100, 2)
+                    if self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Side"] == "short":
+                        percent = percent * (-1)
+                    index = len(self.journal[str(ctx.message.author.id)]) - (1 + c)
+                    c = len(self.journal[str(ctx.message.author.id)])
+                c += 1
+            self.journal[str(ctx.message.author.id)].append({"Cancelled": False, "EntryExit": "Exit", "Timestamp": str(ctx.message.created_at), "Ticker": ticker, "Price": price, "Currency": currency, "Side": side, "Percent": percent, "IndexEntry":index})
+            text = 'Your exit out of ' + ticker + ' at ' + str(price) + ' ' + currency + ' ' + side + ' has been added to the list for a ' + str(percent) + '% change from entry'
         elif len(parts) == 6:
             side = parts[4]
             leverage = parts[5]
+            c = 0
+            percent = 0
+            index = -1
+            while c in range(len(self.journal[str(ctx.message.author.id)])):
+                if (self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1 + c)][
+                        "Cancelled"] == False) and ticker == (
+                self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1 + c)][
+                    "Ticker"]) and currency == (
+                self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1 + c)][
+                    "Currency"]) and self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["EntryExit"] == "Entry":
+                    percent = round((price/(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1 + c)][
+                        "Price"]) - 1)*100, 2)
+                    if self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Side"] == "short":
+                        percent = percent * (-1)
+                    lev = int(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Leverage"].replace('x',''))
+                    percent = percent * lev
+                    index = len(self.journal[str(ctx.message.author.id)]) - (1 + c)
+                    c = len(self.journal[str(ctx.message.author.id)])
+                c += 1
             self.journal[str(ctx.message.author.id)].append(
                 {"Cancelled": False, "EntryExit": "Exit", "Timestamp": str(ctx.message.created_at), "Ticker": ticker, "Price": price, "Currency": currency,
-                 "Side": side, "Leverage": leverage})
+                 "Side": side, "Leverage": leverage, "Percent": percent, "IndexEntry": index})
             text = 'Your exit out of ' + ticker + ' at ' + str(
-                price) + ' ' + currency + ' ' + leverage + ' ' + side + ' has been added to the list'
+                price) + ' ' + currency + ' ' + leverage + ' ' + side + ' has been added to the list for ' + str(percent) +'% change from entry'
         else:
+            c = 0
+            percent = 0
+            index = -1
+            while c in range(len(self.journal[str(ctx.message.author.id)])):
+                if (self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1 + c)][
+                        "Cancelled"] == False) and ticker == (
+                self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1 + c)][
+                    "Ticker"]) and currency == (
+                self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1 + c)][
+                    "Currency"]) and self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["EntryExit"] == "Entry":
+                    percent = round((price/(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1 + c)][
+                        "Price"]) - 1)*100, 2)
+                    index = len(self.journal[str(ctx.message.author.id)]) - (1 + c)
+                    c = len(self.journal[str(ctx.message.author.id)])
+                c += 1
             self.journal[str(ctx.message.author.id)].append(
-                {"Cancelled": False, "EntryExit": "Exit", "Timestamp": str(ctx.message.created_at), "Ticker": ticker, "Price": price, "Currency": currency})
+                {"Cancelled": False, "EntryExit": "Exit", "Timestamp": str(ctx.message.created_at), "Ticker": ticker, "Price": price, "Currency": currency, "Percent": percent, "IndexEntry":index})
+            text += ' for ' + str(percent) + '% change from entry'
 
         self.update_file()
 
@@ -266,10 +316,15 @@ class Journal(commands.Cog):
             amt = int(parse[1])
         except IndexError:
             #print(len(self.journal[str(ctx.message.author.id)])-1)
-            self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)])-1]["Cancelled"] = True
-            self.update_file()
-            await ctx.send(content="Your last entry has been cancelled")
-            return
+            x = 0
+            while x < len(self.journal[str(ctx.message.author.id)]):
+                if self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)])-(1+x)]["Cancelled"] == False:
+                    self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)])-(1+x)]["Cancelled"] = True
+                    self.update_file()
+                    await ctx.send(content="Your last entry has been cancelled")
+                    x = len(self.journal[str(ctx.message.author.id)])
+                    return
+                x += 1
         except ValueError:
             await ctx.send(content="Please use the correct format on your entry and try again")
             return
@@ -279,8 +334,14 @@ class Journal(commands.Cog):
             return
 
         for c in range(amt):
-            self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Cancelled"] = True
-            #print(len(self.journal[str(ctx.message.author.id)]) - (1+c))
+            x = 0
+            while x < len(self.journal[str(ctx.message.author.id)]):
+                if self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)])-(1+x)]["Cancelled"] == False:
+                    self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)])-(1+x)]["Cancelled"] = True
+                    self.update_file()
+                    x = len(self.journal[str(ctx.message.author.id)])
+                x += 1
+
 
         self.update_file()
 
@@ -289,7 +350,7 @@ class Journal(commands.Cog):
 
     @commands.command(
         name='last',
-        description='checks your last uncancelled entry',
+        description='checks your last uncancelled journal entry',
         usage='<text>'
         )
     async def last_command(self, ctx):
@@ -306,21 +367,63 @@ class Journal(commands.Cog):
         await ctx.send(content="You don't have any entries recorded or they may have all been cancelled.")
 
     @commands.command(
-        name='log',
-        description='checks all uncancelled entries listed top down from newest to oldest',
-        aliases=['logs'],
+        name='trades',
+        description='checks last 14 uncancelled entries listed top down from newest to oldest',
+        aliases=['logs', 'log'],
         usage='<text>'
         )
     async def log_command(self, ctx):
         self.update_journal()
-        text=''
+        text='<@' + str(ctx.message.author.id) + '>\n'
+        listlength = 0
         for c in range(len(self.journal[str(ctx.message.author.id)])):
             if self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Cancelled"] == False:
-                text += (str(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["EntryExit"]) +
-                            ' ' + str(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Ticker"]) +
-                            ' at ' + str(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Price"]) +
-                            ' ' + str(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Currency"]) + '\n')
+                text += '•**' + (str(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["EntryExit"]) +
+                            '** ' + str(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Ticker"]))
+                if 'Side' in self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)].keys():
+                    text += ' ' + str(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Side"])
+                if 'Leverage' in self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)].keys():
+                    text += ' ' + str(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Leverage"])
+                text += ' at ' + str(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Price"]) + ' ' + str(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Currency"])
+                if self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["EntryExit"] == "Exit":
+                    text += ' for ' + str(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Percent"]) + '%'
+                text += '\n'
+                listlength += 1
+            if listlength == 14:
+                await ctx.send(content=f"{text}")
+                return
+
         await ctx.send(content=f"{text}")
+
+    @commands.command(
+        name='alltrades',
+        description='checks and PM\'s all uncancelled entries listed top down from newest to oldest',
+        aliases=['logsfull', 'logfull', 'tradeall', 'tradesall', 'alltrade', ],
+        usage='<text>'
+        )
+    async def logfull_command(self, ctx):
+        self.update_journal()
+        text=''
+        listlength = 0
+        for c in range(len(self.journal[str(ctx.message.author.id)])):
+            if self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Cancelled"] == False:
+                text += '•**' + (str(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["EntryExit"]) +
+                            '** ' + str(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Ticker"]))
+                if 'Side' in self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)].keys():
+                    text += ' ' + str(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Side"])
+                if 'Leverage' in self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)].keys():
+                    text += ' ' + str(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Leverage"])
+                text += ' at ' + str(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Price"]) + ' ' + str(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Currency"])
+                if self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["EntryExit"] == "Exit":
+                    text += ' for ' + str(self.journal[str(ctx.message.author.id)][len(self.journal[str(ctx.message.author.id)]) - (1+c)]["Percent"]) + '%'
+                text += '\n'
+                listlength += 1
+            if listlength == 10:
+                await ctx.send(content=f"{text}")
+                text = ''
+                listlength = 0
+
+        await ctx.author.send(content=f"{text}")
 
 def setup(bot):
     bot.add_cog(Journal(bot))
