@@ -167,6 +167,10 @@ class Journal(commands.Cog):
 
         self.update_journal()
 
+        if str(ctx.message.author.id) not in self.journal.keys():
+            self.journal.update({str(ctx.message.author.id): []})
+            await ctx.send(content="Welcome, your first entry automatically has registered you with the bot to record future entries")
+
         text = 'Your entry into ' + ticker + ' at ' + str(price) + ' ' + currency + ' has been added to the list'
 
         if len(parts) == 5:
